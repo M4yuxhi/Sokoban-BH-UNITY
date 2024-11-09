@@ -62,15 +62,15 @@ public static class LevelReader
         List<Vector2> wallsPos = new();
 
         Vector2 playerInitialPos = new();
-
+        Vector2 size = new Vector2();
         for (int row = 0; row < lines.Length; row++) 
         {
             string[] cells = lines[row].Trim().Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-
+            size.y = lines.Length;
             for (int col = 0; col < cells.Length; col++)
             {
                 int value;
-
+                size.x = cells.Length;
                 // Verificar si el valor es numérico y convertirlo
                 if (!int.TryParse(cells[col], out value))
                 {
@@ -91,7 +91,9 @@ public static class LevelReader
                         playerInitialPos = position;
                         floorGridsPos.Add(position);
                         break;
-                    case 3 : boxesInitialPos.Add(position);
+                    case 3 : 
+                        boxesInitialPos.Add(position);
+                        floorGridsPos.Add(position);
                         break;
                     case 4 : goalsPos.Add(position);
                         break;
@@ -99,9 +101,9 @@ public static class LevelReader
             }
         }
 
-        Debug.Log("Boxes: " + boxesInitialPos.Count + "Floor: " + floorGridsPos.Count + "Goals: " + goalsPos.Count + "Walls: " + wallsPos.Count + " Player: yup");
+        Debug.Log("Boxes: " + boxesInitialPos.Count + ", Floor: " + floorGridsPos.Count + ", Goals: " + goalsPos.Count + ", Walls: " + wallsPos.Count + ", Player: yup");
 
-        Level level = new Level(boxesInitialPos, floorGridsPos, goalsPos, wallsPos, playerInitialPos);
+        Level level = new Level(boxesInitialPos, floorGridsPos, goalsPos, wallsPos, playerInitialPos,size);
         levels.Add(level);
     }
 }
