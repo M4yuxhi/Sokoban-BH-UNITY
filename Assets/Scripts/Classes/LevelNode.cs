@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class LevelNode
 {
+    private LevelNode[] neighbors = new LevelNode[4];
+
     public short[,] matrixValues;
     public LevelNode? parent;
     public static int ClassID;
@@ -302,7 +304,15 @@ public class LevelNode
 
     }
 
-    
+    public List<LevelNode> GetNeighbors()
+    {
+        List<LevelNode> neighbors = new List<LevelNode>();
+
+        foreach (var neighbor in this.neighbors)
+            if (neighbor != null) neighbors.Add(neighbor); 
+
+        return neighbors;
+    }
 
     public void Debugging() 
     {
