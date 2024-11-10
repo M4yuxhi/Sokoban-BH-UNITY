@@ -9,6 +9,8 @@ public class LevelNode
 {
     public short[,] matrixValues;
     public LevelNode? parent;
+    public static int ClassID;
+    public int thisId;
     
     public LevelNode(Level level)
     {
@@ -20,8 +22,8 @@ public class LevelNode
                 matrixValues[i, j] = 0;  //inicialice vacIo, como piso en caso default
             }
         }
-       
-
+        ClassID = 0;
+        thisId = 0;
         foreach (Vector2 pos in level.WallsPos)
         {
             matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y ] = 1; //wall
@@ -52,6 +54,32 @@ public class LevelNode
         parent = null;
     }
 
+    public bool EqualsById(LevelNode other) 
+    {
+        return (thisId ==other.thisId);
+    }
+
+    public bool EqualsButDifferentParent(LevelNode anotherNode)
+    {
+        if (this.matrixValues.GetLength(0) != anotherNode.matrixValues.GetLength(0) || this.matrixValues.GetLength(1) != anotherNode.matrixValues.GetLength(1))
+        {
+            return false;
+        }
+        if (anotherNode.parent.EqualsById(parent) ) { return false; }
+        for (int i = 0; i < matrixValues.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrixValues.GetLength(1); j++)
+            {
+                if (matrixValues[i, j] != anotherNode.matrixValues[i, j])
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
     /**
      * Compara 2 LevelNode para saber si son idEnticos o no 
      * Sirve para en la bUsqueda no agregar nodos idEnticos o no agregar nodos de otras dimensiones
@@ -60,7 +88,8 @@ public class LevelNode
      * Si al menos un valor es distinto: true
      *
      *
-     **/public bool isNewValidNode(LevelNode anotherNode)
+     **/
+    public bool isNewValidNode(LevelNode anotherNode)
     {
         if (this.matrixValues.GetLength(0)!= anotherNode.matrixValues.GetLength(0) || this.matrixValues.GetLength(1) != anotherNode.matrixValues.GetLength(1)) 
         {
@@ -71,7 +100,7 @@ public class LevelNode
         {
             for (int j = 0; j < matrixValues.GetLength(1); j++)
             {
-                if (matrixValues[i,j]!=anotherNode.matrixValues[i,j] ) 
+                if (matrixValues[i,j]!=anotherNode.matrixValues[i,j] || !parent.Equals(anotherNode.parent)) 
                 {
                     return true;
                 }
@@ -191,6 +220,8 @@ public class LevelNode
 
     public LevelNode(LevelNode parent, Vector2 direction)
     {
+        ClassID++;
+        thisId = ClassID;
         matrixValues = new short[parent.matrixValues.GetLength(0), parent.matrixValues.GetLength(1)];
         this.parent = parent;
         short playerX = -1;
@@ -275,7 +306,7 @@ public class LevelNode
 
     public void Debugging() 
     {
-        string line = "Level Node: \n";
+        string line = "Level Node:  "+this.thisId+"\n";
         for (int i = 0; i < matrixValues.GetLength(1); i++)
         {
             for (int j = 0; j < matrixValues.GetLength(0); j++)

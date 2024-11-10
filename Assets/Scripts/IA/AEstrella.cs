@@ -18,10 +18,25 @@ public class AEstrella : MonoBehaviour
     }
 
 
-    public int Heuristica()
+    /**
+     * Retorna un valor aproximado de que tan cerca está de ganar un nivel
+     * Entre menor el valor, mejor nodo es
+     * 
+     **/public int Heuristica(LevelNode node)
     {
-        int h = 0;
-        //TO DO: que haga algo 
+        int h = 1000000000;
+        List<Vector2> boxes;
+        List<Vector2> goals;
+        for (int i = 0; i<node.matrixValues.GetLength(0); i++) 
+        {
+            for (int j = 0; j < node.matrixValues.GetLength(1); j++)
+            {
+                if (node.matrixValues[i,j]== ) 
+                {
+
+                }
+            }
+        }
         return h;
     }
 
