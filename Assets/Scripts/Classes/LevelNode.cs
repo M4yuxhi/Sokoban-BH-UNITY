@@ -9,81 +9,283 @@ public class LevelNode
 {
     public short[,] matrixValues;
     public LevelNode? parent;
-
+    
     public LevelNode(Level level)
     {
-        Debug.Log("Size x:" + ((int)level.Size.x) + ",  Size y:" + ((int)level.Size.y));
-        Debug.Log("player x:" + ((int)level.PlayerInitialPos.x) + ",  player y:" + ((int)level.PlayerInitialPos.y));
-        matrixValues = new short[(1+(int)level.Size.x), (1+(int)level.Size.y)];
-        Debug.Log("Size of matrix: " + matrixValues.GetLength(0) + "," + (matrixValues.GetLength(1)));
-        for (int i = 0; i < (int)level.Size.x; i++ ) 
-        { 
+        matrixValues = new short[(int)level.Size.x, (int)level.Size.y];
+        for (int i = 0; i < (int)level.Size.x; i++)
+        {
             for (int j = 0; j < (int)level.Size.y; j++)
             {
-                matrixValues[i,j] = 0;  //initialice empty, as floor as default
-            } 
-        }
-        matrixValues[(int)level.PlayerInitialPos.x, (int)level.PlayerInitialPos.y] = 2;
-        for (int index = 0; index < level.WallsPos.Count; index++)
-        {
-            try
-            {
-                matrixValues[(int)level.WallsPos[index].x, (int)level.WallsPos[index].y] = 1;
-                //Debug.Log("Success ");
-                //Debug.Log("Success at wall: "+ (int)level.WallsPos[index].x+ "," + (int)level.WallsPos[index].y);
+                matrixValues[i, j] = 0;  //inicialice vacIo, como piso en caso default
             }
-            catch (Exception e)
-            {
-                Debug.Log(e.ToString());
-                //Debug.Log("Error Happened at index [" + index + "]:   Wall x:" + ((int)level.WallsPos[index].x) + ",  Wall y:" + ((int)level.WallsPos[index].y));
-                continue;
-            }            
         }
+       
 
-        
+        foreach (Vector2 pos in level.WallsPos)
+        {
+            matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y ] = 1; //wall
+        }
         foreach (Vector2 pos in level.GoalsPos)
         {
-            matrixValues[(int)pos.x, (int)pos.y] = 4; //goal
+            matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y] = 4; //goal
+        }
+        if (matrixValues[(int)level.PlayerInitialPos.x, (int)level.Size.y - (int)level.PlayerInitialPos.y] == 4)
+        {
+            matrixValues[(int)level.PlayerInitialPos.x, (int)level.Size.y - (int)level.PlayerInitialPos.y] = 6;
+        }
+        if (matrixValues[(int)level.PlayerInitialPos.x, (int)level.Size.y - (int)level.PlayerInitialPos.y] == 0)
+        {
+            matrixValues[(int)level.PlayerInitialPos.x, (int)level.Size.y - (int)level.PlayerInitialPos.y] = 2;
         }
         foreach (Vector2 pos in level.BoxesInitialPos)
-        {            
-            if (matrixValues[(int)pos.x, (int)pos.y]== 4) //if is already a goal
+        {
+            if (matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y] == 4) //if is already a goal
             {
-                matrixValues[(int)pos.x, (int)pos.y] = 5;
+                matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y] = 5; //Box in goal
             }
             else
             {
-                matrixValues[(int)pos.x, (int)pos.y] = 3;
+                matrixValues[(int)pos.x, (int)level.Size.y - (int)pos.y] = 3; //Box
             }
         }
-        
         parent = null;
     }
-    
-    // Start is called before the first frame update
-    void Start()
+
+    /**
+     * Compara 2 LevelNode para saber si son idEnticos o no 
+     * Sirve para en la bUsqueda no agregar nodos idEnticos o no agregar nodos de otras dimensiones
+     * Si tienen diferentes dimensiones: false
+     * Si todos sus valores son iguales: false
+     * Si al menos un valor es distinto: true
+     *
+     *
+     **/public bool isNewValidNode(LevelNode anotherNode)
     {
-        
+        if (this.matrixValues.GetLength(0)!= anotherNode.matrixValues.GetLength(0) || this.matrixValues.GetLength(1) != anotherNode.matrixValues.GetLength(1)) 
+        {
+            return false;
+        }
+
+        for (int i = 0; i<matrixValues.GetLength(0); i++) 
+        {
+            for (int j = 0; j < matrixValues.GetLength(1); j++)
+            {
+                if (matrixValues[i,j]!=anotherNode.matrixValues[i,j] ) 
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+
+    public LevelNode CreateChild(Vector2 direction)
+    {
+        float largo = Mathf.Sqrt((direction.x * direction.x) + (direction.y * direction.y));
+        if ((direction.x != 0 && direction.x != 1 && direction.x != -1) || (direction.y != 0 && direction.y != 1 && direction.y != -1) || largo != 1)
+        {
+            return null;
+        }
+        else
+        {
+            if (ValidateChild(direction))
+            {
+                return new LevelNode(this, direction);
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * MEtodo que valida si el nivel estA resuelto o no
+     * True: Ganaste
+     * False: Siga participando, por que debe continuar la bUsqueda
+     *
+     */public bool Solved() 
+    {
+        short boxesInGoal = 0;
+        short boxesNotGoal = 0;
+        for (short i = 0; i < matrixValues.GetLength(0); i++)
+        {
+            for (short j = 0; j < matrixValues.GetLength(1); j++)
+            {
+                if (matrixValues[i,j]==3) { boxesNotGoal++; }
+                if (matrixValues[i, j] == 5) { boxesInGoal++; }
+            }
+        }return (boxesInGoal > 0 && boxesNotGoal == 0); 
+    }
+
+    /**
+     * Valida que el movimiento sea legal
+     * True: Movimiento vAlido
+     * False: No se debe crear ese nodo
+     *
+     */
+    public bool ValidateChild(Vector2 direction)
+    {
+        short playerX = -1;
+        short playerY = -1;
+        for (short i = 0; i < matrixValues.GetLength(0); i++)
+        {
+            for (short j = 0; j < matrixValues.GetLength(1); j++)
+            {
+                if (matrixValues[i, j] == 2 || matrixValues[i, j] == 6)
+                {
+                    playerX = i;
+                    playerY = j;
+                }
+            }
+        }
+        if (playerY == -1 || playerX == -1) //no hay jugador
+        {
+            return false;
+        }
+        switch (direction.x)
+        {
+            case 1:
+                if (playerX + 1 >= matrixValues.GetLength(0)) { return false; }//Me salgo del mapa                
+                if (matrixValues[(playerX + 1), playerY] == 1) { return false; } //Muro
+                if ((matrixValues[(playerX + 1), playerY] == 3 || matrixValues[(playerX + 1), playerY] == 5) && playerX + 2 >= matrixValues.GetLength(1)) { return false; }//caja luego se sale
+                if ((matrixValues[(playerX + 1), playerY] == 3 || matrixValues[(playerX + 1), playerY] == 5) && (matrixValues[(playerX + 2), playerY] == 3 || matrixValues[(playerX + 2), playerY] == 5 || matrixValues[(playerX + 2), playerY] == 1 ))//caja y luego caja o Muro, o me salgo
+                {
+                    return false;
+                }
+                break;
+            case -1:
+                if (playerX - 1 < 0) { return false; }//Me salgo del mapa                
+                if (matrixValues[(playerX - 1), playerY] == 1) { return false; } //Muro
+                if ((matrixValues[(playerX - 1), playerY] == 3 || matrixValues[(playerX - 1), playerY] == 5) && playerX - 2 <0) { return false; }//caja luego se sale
+                if ((matrixValues[(playerX - 1), playerY] == 3 || matrixValues[(playerX - 1), playerY] == 5) && (matrixValues[(playerX - 2), playerY] == 3 || matrixValues[(playerX - 2), playerY] == 5 || matrixValues[(playerX - 2), playerY] == 1))//caja y luego caja o Muro, o me salgo
+                {
+                    return false;
+                }
+                break;
+        }
+        switch (direction.y)
+        {
+            case 1:
+                if (playerY + 1 >= matrixValues.GetLength(1)) { return false; }//Me salgo del mapa                
+                if (matrixValues[playerX, (playerY + 1)] == 1) { return false; } //Muro
+                if ((matrixValues[playerX, (playerY + 1)] == 3 || matrixValues[playerX, (playerY + 1)] == 5) && playerY + 2 >= matrixValues.GetLength(1)) { return false; }//caja luego se sale
+                if ((matrixValues[playerX, (playerY + 1)] == 3 || matrixValues[playerX, (playerY + 1)] == 5) && (matrixValues[playerX, (playerY + 2)] == 3 || matrixValues[playerX, (playerY + 2)] == 5 || matrixValues[playerX, (playerY + 2)] == 1))//caja y luego caja o Muro, 
+                {
+                    return false;
+                }
+                break;
+            case -1:
+                if (playerY - 1 < 0) { return false; }//Me salgo del mapa                
+                if (matrixValues[playerX, (playerY - 1)] == 1) { return false; } //Muro
+                if ((matrixValues[playerX, (playerY - 1)] == 3 || matrixValues[playerX, (playerY - 1)] == 5) && playerY - 2 < 0) { return false; }//caja luego se sale
+                if ((matrixValues[playerX, (playerY - 1)] == 3 || matrixValues[playerX, (playerY - 1)] == 5) && (matrixValues[playerX, (playerY - 2)] == 3 || matrixValues[playerX, (playerY - 2)] == 5 || matrixValues[playerX, (playerY - 2)] == 1 ))//caja y luego caja o Muro
+                {
+                    return false;
+                }
+                break;
+        }
+        return true;
+    }
+
+    public LevelNode(LevelNode parent, Vector2 direction)
+    {
+        matrixValues = new short[parent.matrixValues.GetLength(0), parent.matrixValues.GetLength(1)];
+        this.parent = parent;
+        short playerX = -1;
+        short playerY = -1;
+        for (short i = 0; i < matrixValues.GetLength(0); i++)
+        {
+            for (short j = 0; j < matrixValues.GetLength(1); j++)
+            {
+                this.matrixValues[i, j ] = parent.matrixValues[i, j];
+                if (parent.matrixValues[i, j ] == 2 || parent.matrixValues[i, j] == 6) //hay un jugador
+                {
+                    switch (parent.matrixValues[i, j])
+                    {
+                        case 2: matrixValues[i, j] = 0; break;
+                        case 6: matrixValues[i, j] = 4; break;
+                        default: break;
+                    }
+                playerX = 
+                playerY = j;
+                }
+            }
+            
+        }
+        switch (direction.x)
+        {
+            case 1:
+                if (matrixValues[playerX + 1, playerY] == 3 || matrixValues[playerX + 1, playerY] == 5) //hay caja
+                {
+                    if (matrixValues[playerX + 2, playerY] == 0){matrixValues[playerX + 2, playerY] = 3;}
+                    if (matrixValues[playerX + 2, playerY] == 4){matrixValues[playerX + 2, playerY] = 5;}
+                    if (matrixValues[playerX + 1, playerY] == 3) { matrixValues[playerX + 1, playerY] = 2; }
+                    if (matrixValues[playerX + 1, playerY] == 5) { matrixValues[playerX + 1, playerY] = 6; }
+                }
+                if (matrixValues[playerX + 1, playerY] == 0) { matrixValues[playerX + 1, playerY] = 2; }
+                if (matrixValues[playerX + 1, playerY] == 4) { matrixValues[playerX + 1, playerY] = 6; }
+
+                break;
+            case -1:
+                if (matrixValues[playerX - 1, playerY] == 3 || matrixValues[playerX + 1, playerY] == 5) //hay caja
+                {
+                    if (matrixValues[playerX - 2, playerY] == 0) { matrixValues[playerX - 2, playerY] = 3; }
+                    if (matrixValues[playerX - 2, playerY] == 4) { matrixValues[playerX - 2, playerY] = 5; }
+                    if (matrixValues[playerX - 1, playerY] == 3) { matrixValues[playerX - 1, playerY] = 2; }
+                    if (matrixValues[playerX - 1, playerY] == 5) { matrixValues[playerX - 1, playerY] = 6; }
+                }
+                if (matrixValues[playerX - 1, playerY] == 0) { matrixValues[playerX - 1, playerY] = 2; }
+                if (matrixValues[playerX - 1, playerY] == 4) { matrixValues[playerX - 1, playerY] = 6; }
+                break;
+            default: break;
+        }
+        switch (direction.y)
+        {
+            case 1:
+                if (matrixValues[playerX , playerY + 1] == 3 || matrixValues[playerX , playerY + 1] == 5) //hay caja
+                {
+                    if (matrixValues[playerX , playerY + 2] == 0) { matrixValues[playerX, playerY + 2] = 3; }
+                    if (matrixValues[playerX , playerY + 2] == 4) { matrixValues[playerX, playerY + 2] = 5; }
+                    if (matrixValues[playerX , playerY + 1] == 3) { matrixValues[playerX, playerY + 1] = 2; }
+                    if (matrixValues[playerX , playerY + 1] == 5) { matrixValues[playerX, playerY +1] = 6; }
+                }
+                if (matrixValues[playerX, playerY + 1] == 0) { matrixValues[playerX, playerY + 1] = 2; }
+                if (matrixValues[playerX, playerY + 1] == 4) { matrixValues[playerX, playerY + 1] = 6; }
+
+                break;
+            case -1:
+                if (matrixValues[playerX, playerY - 1] == 3 || matrixValues[playerX, playerY-1] == 5) //hay caja
+                {
+                    if (matrixValues[playerX, playerY - 2] == 0) { matrixValues[playerX, playerY - 2] = 3; }
+                    if (matrixValues[playerX, playerY - 2] == 4) { matrixValues[playerX, playerY - 2] = 5; }
+                    if (matrixValues[playerX, playerY - 1] == 3) { matrixValues[playerX, playerY - 1] = 2; }
+                    if (matrixValues[playerX, playerY - 1] == 5) { matrixValues[playerX, playerY - 1] = 6; }
+                }
+                if (matrixValues[playerX, playerY - 1] == 0) { matrixValues[playerX, playerY - 1] = 2; }
+                if (matrixValues[playerX, playerY - 1] == 4) { matrixValues[playerX, playerY - 1] = 6; }
+                break;
+            default: break;
+        }
+
+    }
+
+    
 
     public void Debugging() 
     {
-
         string line = "Level Node: \n";
         for (int i = 0; i < matrixValues.GetLength(1); i++)
         {
             for (int j = 0; j < matrixValues.GetLength(0); j++)
             {
-                line += (" "+matrixValues[j,i]);
+                line += ("  |  "+matrixValues[j,i] );
             }
-            line += "\n";            
+            line += "  |\n";
+            line += "====================================================\n";
         }
         Debug.Log(line);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 }
