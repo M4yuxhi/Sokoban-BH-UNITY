@@ -2,20 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AEstrella
+public static class AEstrella
 {
-    public LevelNode? root;
-    public List<KeyValuePair<LevelNode, int>> Open;
-    public List<KeyValuePair<LevelNode, int>> Close;
+    //public LevelNode? root;
+    //public List<KeyValuePair<LevelNode, int>> Open;
+    //public List<KeyValuePair<LevelNode, int>> Close;
 
 
-    public AEstrella(LevelNode root)
+    /*public AEstrella(LevelNode root)
     {
         this.root = root;
         Open = new List<KeyValuePair<LevelNode, int>>();
         Close = new List<KeyValuePair<LevelNode, int>>();
         Open.Add(new KeyValuePair<LevelNode, int>(this.root, 0));
-    }
+    }*/
 
 
     /**
@@ -23,7 +23,7 @@ public class AEstrella
      * Entre menor el valor, mejor nodo es
      * 
      **/
-    public int Heuristica(LevelNode node)
+    public static int Heuristica(LevelNode node)
     {
         int h = 1000000000;
         List<Vector2> boxes = new List<Vector2>();
@@ -61,7 +61,7 @@ public class AEstrella
             listOfS+=("Line "+i+": " + s + "\n");
         }
         Debug.Log(listOfS);*/
-        string listOfS = "Heuristica:\n";
+        string s = "Heuristica:\n";
         for (int i = 0; i < nFact; i++)
         {
             int hPossible = 0;
@@ -70,16 +70,16 @@ public class AEstrella
             if (hPossible < h)
             {
                 h = hPossible;
-                listOfS+=("Hallado un mejor valor: " + h + "\n");
+                s+=("Hallado un mejor valor: " + h + "\n");
             }
             else
-                listOfS += ("No era mejor valor:" + hPossible+ " que " + h+"\n");
+                s += ("No era mejor valor:" + hPossible+ " que " + h+"\n");
         }
-        Debug.Log(listOfS);
+        Debug.Log(s);
         return h;
     }
 
-    public int Factorial(int n)
+    public static int Factorial(int n)
     {
         int nFact = n;
         int i = n;
@@ -91,7 +91,7 @@ public class AEstrella
         return nFact;
     }
 
-    public void Testing(List<Vector2> vectorList, Vector2[,] matrizPermutaciones) 
+    public static void Testing(List<Vector2> vectorList, Vector2[,] matrizPermutaciones) 
     {
         // Calcula el número de permutaciones (factorial de la cantidad de elementos)
         //int numPermutaciones = Factorial(vectorList.Count);

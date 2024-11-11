@@ -13,9 +13,12 @@ public class LevelNode
     public LevelNode? parent;
     public static int ClassID;
     public int thisId;
-    
+    public int cost;
+    public Vector2 dirFromParent;
+
     public LevelNode(Level level)
     {
+        cost = 0;
         matrixValues = new short[(int)level.Size.x, (int)level.Size.y];
         for (int i = 0; i < (int)level.Size.x; i++)
         {
@@ -222,8 +225,6 @@ public class LevelNode
 
     public LevelNode(LevelNode parent, Vector2 direction)
     {
-        ClassID++;
-        thisId = ClassID;
         matrixValues = new short[parent.matrixValues.GetLength(0), parent.matrixValues.GetLength(1)];
         this.parent = parent;
         short playerX = -1;
@@ -301,7 +302,10 @@ public class LevelNode
                 break;
             default: break;
         }
-
+        dirFromParent = direction;
+        cost = parent.cost + 1;
+        ClassID++;
+        thisId = ClassID;
     }
 
     public List<LevelNode> GetNeighbors()
@@ -327,8 +331,7 @@ public class LevelNode
             line += "====================================================\n";
         }
         Debug.Log(line);
-        AEstrella printer = new AEstrella(this);
-        printer.Heuristica(this);
+        //AEstrella.Heuristica(this);
     }
     
 }
