@@ -13,9 +13,14 @@ public class LevelNode
     public LevelNode? parent;
     public static int ClassID;
     public int thisId;
-    
+
+    public static Action<LevelNode> UpdateScreen;
+
     public LevelNode(Level level)
     {
+        //¿Cómo llamar a UpdateScreen? ez
+        //UpdateScreen?.Invoke(this);
+
         matrixValues = new short[(int)level.Size.x, (int)level.Size.y];
         for (int i = 0; i < (int)level.Size.x; i++)
         {

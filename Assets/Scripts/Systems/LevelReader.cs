@@ -103,7 +103,7 @@ public static class LevelReader
 
         Debug.Log("Boxes: " + boxesInitialPos.Count + ", Floor: " + floorGridsPos.Count + ", Goals: " + goalsPos.Count + ", Walls: " + wallsPos.Count + ", Player: yup");
 
-        Level level = new Level(boxesInitialPos, floorGridsPos, goalsPos, wallsPos, playerInitialPos,size);
+        Level level = new Level(boxesInitialPos, floorGridsPos, goalsPos, wallsPos, playerInitialPos, size);
         levels.Add(level);
     }
 }
