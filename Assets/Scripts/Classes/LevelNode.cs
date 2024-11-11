@@ -327,6 +327,8 @@ public class LevelNode
             line += "====================================================\n";
         }
         Debug.Log(line);
+        AEstrella printer = new AEstrella(this);
+        printer.Heuristica(this);
     }
     
 }

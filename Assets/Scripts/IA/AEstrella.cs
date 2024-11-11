@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AEstrella : MonoBehaviour
+public class AEstrella
 {
     public LevelNode? root;
     public List<KeyValuePair<LevelNode, int>> Open;
@@ -44,15 +44,38 @@ public class AEstrella : MonoBehaviour
             Debug.Log("Error en la Heuristica\nDiferente Nº de cajas que metas");
         }
         if (goals.Count == 0) return 0; //ganamos!
-        int nFact = boxes.Count;
-        int n = boxes.Count;
-        while (n > 1)
-        {
-            n--;
-            nFact *= n;
-        }
+        int nFact = Factorial(boxes.Count);
         Vector2[,] perms = new Vector2[nFact, boxes.Count];
+        Testing(boxes,perms);
 
+        /*
+        // Imprimir la matriz para verificar el resultado
+        string listOfS="";
+        for (int i = 0; i < nFact; i++)
+        {
+            string s = "";
+            for (int j = 0; j < boxes.Count; j++)
+            {
+                s+= ("|("+perms[i,j].x+","+ perms[i, j].y+")|") ;
+            }
+            listOfS+=("Line "+i+": " + s + "\n");
+        }
+        Debug.Log(listOfS);*/
+        string listOfS = "Heuristica:\n";
+        for (int i = 0; i < nFact; i++)
+        {
+            int hPossible = 0;
+            for (int j = 0; j < goals.Count; j++)
+                hPossible += (int)(Mathf.Abs(perms[i, j].x - goals[j].x) + Mathf.Abs(perms[i, j].y - goals[j].y)); //Distancia Manhattan            
+            if (hPossible < h)
+            {
+                h = hPossible;
+                listOfS+=("Hallado un mejor valor: " + h + "\n");
+            }
+            else
+                listOfS += ("No era mejor valor:" + hPossible+ " que " + h+"\n");
+        }
+        Debug.Log(listOfS);
         return h;
     }
 
@@ -68,11 +91,11 @@ public class AEstrella : MonoBehaviour
         return nFact;
     }
 
-    public void Testing(List<Vector2> vectorList) 
+    public void Testing(List<Vector2> vectorList, Vector2[,] matrizPermutaciones) 
     {
         // Calcula el número de permutaciones (factorial de la cantidad de elementos)
-        int numPermutaciones = Factorial(vectorList.Count);
-        Vector2[,] matrizPermutaciones = new Vector2[numPermutaciones, vectorList.Count];
+        //int numPermutaciones = Factorial(vectorList.Count);
+        //Vector2[,] matrizPermutaciones = new Vector2[numPermutaciones, vectorList.Count];
 
         // Llenar la matriz con todas las permutaciones
         List<Vector2[]> listaPermutaciones = new List<Vector2[]>();
@@ -86,20 +109,25 @@ public class AEstrella : MonoBehaviour
                 matrizPermutaciones[i, j] = listaPermutaciones[i][j];
             }
         }
-
+        
+        /*
         // Imprimir la matriz para verificar el resultado
+        string listOfS="";
         for (int i = 0; i < numPermutaciones; i++)
         {
+            string s = "";
             for (int j = 0; j < vectorList.Count; j++)
             {
-                Debug.Log($"("+matrizPermutaciones[i, j].x + ","+ matrizPermutaciones[i, j].y +")");
+                s+= ("|("+matrizPermutaciones[i,j].x+","+ matrizPermutaciones[i, j].y+")|") ;
             }
-            Debug.Log("");
+            listOfS+=("Line "+i+": " + s + "\n");
         }
+        Debug.Log(listOfS);
+        */
     }
 
     // Método recursivo para generar permutaciones
-    static void GenerarPermutaciones(List<Vector2> vectorList, int inicio, int fin, List<Vector2[]> resultado)
+    public static void GenerarPermutaciones(List<Vector2> vectorList, int inicio, int fin, List<Vector2[]> resultado)
     {
         if (inicio == fin)
         {
@@ -118,15 +146,5 @@ public class AEstrella : MonoBehaviour
     }
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+   
 }
