@@ -61,7 +61,7 @@ public static class AEstrella
             listOfS+=("Line "+i+": " + s + "\n");
         }
         Debug.Log(listOfS);*/
-        string s = "Heuristica:\n";
+        //string s = "Heuristica:\n";
         for (int i = 0; i < nFact; i++)
         {
             int hPossible = 0;
@@ -70,12 +70,12 @@ public static class AEstrella
             if (hPossible < h)
             {
                 h = hPossible;
-                s+=("Hallado un mejor valor: " + h + "\n");
+                //s+=("Hallado un mejor valor: " + h + "\n");
             }
-            else
-                s += ("No era mejor valor:" + hPossible+ " que " + h+"\n");
+            //else
+                //s += ("No era mejor valor:" + hPossible+ " que " + h+"\n");
         }
-        Debug.Log(s);
+        //Debug.Log(s);
         return h;
     }
 

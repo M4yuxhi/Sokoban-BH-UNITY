@@ -43,16 +43,16 @@ public static class IDA_Star
 
         int minimoSiguienteLimite = int.MaxValue;
 
-        foreach (LevelNode hijo in nodo.GenerarHijos())
+        foreach (LevelNode hijo in nodo.GetNeighbors())
         {
-            if (hijo == nodo.Padre) // Evitar retroceder al padre directo
+            if (hijo == nodo.parent) // Evitar retroceder al padre directo
                 continue;
 
             int resultado = BusquedaProfundidadLimitada(hijo, fLimit, ruta);
 
             if (resultado == 0)
             {
-                ruta.Add(hijo.MovimientoDesdePadre); // Agregar el movimiento si estamos en el camino de la meta
+                ruta.Add(hijo.dirFromParent); // Agregar el movimiento si estamos en el camino de la meta
                 return 0;
             }
 

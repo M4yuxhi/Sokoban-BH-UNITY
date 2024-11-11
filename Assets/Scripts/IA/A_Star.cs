@@ -1,8 +1,69 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using UnityEngine;
 public static class A_Star
 {
-    public static bool Algorithm(List<LevelNode> graph, LevelNode start, LevelNode goal)
+    public static List<Vector2> BuscarRuta(LevelNode raiz)
+    {
+        var abiertos = new SortedSet<LevelNode>(); // Abiertos, ordenados por f = costo + heurística
+        var cerrados = new HashSet<LevelNode>(); // Conjunto de nodos ya visitados
+        var ruta = new List<Vector2>();
+
+        abiertos.Add(raiz);
+
+        while (abiertos.Count > 0)
+        {
+            // Obtener el nodo con el menor f
+            LevelNode actual = abiertos.Min;
+            abiertos.Remove(actual);
+
+            if (actual.Solved())
+            {
+                // Construir la ruta desde la meta hacia el nodo raíz
+                while (actual.parent != null)
+                {
+                    ruta.Add(actual.dirFromParent);
+                    actual = actual.parent;
+                }
+                ruta.Reverse(); // Invertir para que quede desde la raíz hasta la meta
+                return ruta;
+            }
+
+            cerrados.Add(actual);
+
+            // Generar los hijos del nodo actual
+            foreach (LevelNode hijo in actual.GetNeighbors())
+            {
+                if (cerrados.Contains(hijo))
+                    continue; // Saltar si ya fue visitado
+
+                if (abiertos.Contains(hijo))
+                {
+                    // Actualizar el coste si encontramos un camino mejor
+                    LevelNode nodoExistente = abiertos.TryGetValue(hijo, out nodoExistente) ? nodoExistente : null;
+                    if (nodoExistente != null && hijo.cost < nodoExistente.cost)
+                    {
+                        abiertos.Remove(nodoExistente);
+                        abiertos.Add(hijo);
+                    }
+                }
+                else
+                {
+                    abiertos.Add(hijo);
+                }
+            }
+        }
+
+        return null; // No se encontró una ruta
+    }
+
+    
+
+
+    /*public static bool Algorithm(List<LevelNode> graph, LevelNode start, LevelNode goal)
     {
         var queue = new PriorityQueue<LevelNode>();
         HashSet<LevelNode> reached = new HashSet<LevelNode>();
@@ -51,4 +112,5 @@ public static class A_Star
     {
         return 0;
     }
+    */
 }

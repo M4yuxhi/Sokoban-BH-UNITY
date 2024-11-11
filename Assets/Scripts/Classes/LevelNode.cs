@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class LevelNode
 {
-    private LevelNode[] neighbors = new LevelNode[4];
+    //private LevelNode[] neighbors = new LevelNode[4];
 
     public short[,] matrixValues;
     public LevelNode? parent;
@@ -20,7 +20,7 @@ public class LevelNode
 
     public LevelNode(Level level)
     {
-        //�C�mo llamar a UpdateScreen? ez
+        //COmo llamar a UpdateScreen? ez
         //UpdateScreen?.Invoke(this);
         cost = 0;
         matrixValues = new short[(int)level.Size.x, (int)level.Size.y];
@@ -315,10 +315,22 @@ public class LevelNode
     public List<LevelNode> GetNeighbors()
     {
         List<LevelNode> neighbors = new List<LevelNode>();
-
-        foreach (var neighbor in this.neighbors)
-            if (neighbor != null) neighbors.Add(neighbor); 
-
+        List<Vector2> dirs = new List<Vector2>();
+        dirs.Add(new Vector2(1, 0));
+        dirs.Add(new Vector2(0, 1));
+        dirs.Add(new Vector2(-1, 0));
+        dirs.Add(new Vector2(0, -1));
+        for (int i =0;i<dirs.Count;i++) 
+        {
+            if (!dirs[i].Equals(-this.dirFromParent))
+            {
+                if (ValidateChild(dirs[i])) 
+                { 
+                    LevelNode neighbor = new LevelNode(this, dirs[i]);
+                    neighbors.Add(neighbor);
+                }
+            }
+        }
         return neighbors;
     }
 
@@ -335,6 +347,15 @@ public class LevelNode
             line += "====================================================\n";
         }
         Debug.Log(line);
+        List<Vector2> path = A_Star.BuscarRuta(this);
+        if (path != null)
+        {
+            Debug.Log("IDA:\n" + path);
+        }
+        else
+        {
+            Debug.Log("Camino no hallado:\n" );
+        }
         //AEstrella.Heuristica(this);
     }
     
