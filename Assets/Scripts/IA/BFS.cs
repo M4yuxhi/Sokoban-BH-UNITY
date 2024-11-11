@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class BFS
 {
-    public static bool Algorithm(List<LevelNode> graph, LevelNode start, LevelNode goal)
+    public static LevelNode? Algorithm(List<LevelNode> graph, LevelNode start, LevelNode goal)
     {
         Queue<LevelNode> queue = new Queue<LevelNode>();
         HashSet<LevelNode> reached = new HashSet<LevelNode>();
@@ -15,7 +15,7 @@ public static class BFS
         { 
             LevelNode t = queue.Dequeue();
 
-            if (t == goal) return true;
+            if (t.Solved()) return t;
 
             foreach (var u in t.GetNeighbors())
             {
@@ -27,6 +27,6 @@ public static class BFS
             }
         }
 
-        return false;
+        return null;
     }
 }
